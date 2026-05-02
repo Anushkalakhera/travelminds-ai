@@ -24,7 +24,7 @@ export default function TripDetailPage() {
   }, [id]);
 
   if (loading) return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-rose-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-gray-300   to-rose-50">
       <Navbar />
       <div className="flex items-center justify-center mt-20 text-gray-500">
         Loading trip...
@@ -33,7 +33,7 @@ export default function TripDetailPage() {
   );
 
   if (!trip) return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-rose-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-gray-300   to-rose-50">
       <Navbar />
       <div className="flex items-center justify-center mt-20 text-gray-500">
         Trip not found
@@ -43,7 +43,7 @@ export default function TripDetailPage() {
 
   return (
     <div className="min-h-screen 
-    bg-gradient-to-br from-orange-50 via-white to-rose-50 
+    bg-gradient-to-br from-orange-50 via-gray-300 to-rose-50 
     dark:from-gray-950 dark:via-gray-900 dark:to-black 
     relative overflow-hidden">
 

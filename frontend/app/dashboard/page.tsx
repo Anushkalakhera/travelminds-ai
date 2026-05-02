@@ -1,15 +1,26 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { getMyTrips, deleteTrip } from '@/lib/api';
+import { getMyTrips, deleteTrip, getProfile } from '@/lib/api';
 import Navbar from '@/components/Navbar';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { motion } from "framer-motion";
+import { motion } from 'framer-motion';
+
+const TRAVEL_TIPS = [
+  'Pack light and keep essentials handy 🎒',
+  'Always carry a power bank! 🔋',
+  'Book hotels early for better deals 🏨',
+  'Try local street food — it\'s the best! 🍜',
+  'Keep digital copies of your documents 📄',
+  'Learn a few words of the local language 🗣️',
+];
 
 export default function Dashboard() {
   const [trips, setTrips] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [user, setUser] = useState<any>(null);
+  const [tipIndex, setTipIndex] = useState(0);
   const router = useRouter();
 
   useEffect(() => {
@@ -19,6 +30,13 @@ export default function Dashboard() {
       setTrips(data);
       setLoading(false);
     });
+    getProfile().then(setUser);
+
+    // Rotate tips every 5 seconds
+    const interval = setInterval(() => {
+      setTipIndex(prev => (prev + 1) % TRAVEL_TIPS.length);
+    }, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleDelete = async (id: string) => {
@@ -32,10 +50,14 @@ export default function Dashboard() {
     t.destination.toLowerCase().includes(search.toLowerCase())
   );
 
+  const initials = user?.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '?';
+  const totalDays = trips.reduce((a, t) => a + t.days, 0);
+  const budgetTrips = trips.filter(t => t.budget === 'Low').length;
+
   return (
-    <div className="min-h-screen 
-    bg-gradient-to-br from-orange-50 via-white to-rose-50 
-    dark:from-gray-950 dark:via-gray-900 dark:to-black 
+    <div className="min-h-screen
+    bg-gradient-to-br from-orange-50 via-white to-rose-50
+    dark:from-gray-950 dark:via-gray-900 dark:to-black
     relative overflow-hidden">
 
       {/* Glow */}
@@ -44,19 +66,34 @@ export default function Dashboard() {
 
       <Navbar />
 
-      {/* HERO */}
-      <div className="relative h-72 overflow-hidden mb-8">
+      {/* HERO BANNER */}
+      <div className="relative h-64 overflow-hidden">
         <img
-          src="/images/cexin-ding-8ZsK6Db6ikY-unsplash.jpg"
+          src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1400&q=80"
           className="w-full h-full object-cover"
+          alt="Travel"
         />
-        <div className="absolute inset-0 bg-black/50"></div>
-
-        <div className="absolute bottom-5 left-6 text-white">
-          <h2 className="text-2xl font-bold">Welcome Back 👋</h2>
-          <p className="text-sm opacity-90">
-            Ready to explore your next adventure?
-          </p>
+        <div className="absolute inset-0 bg-gradient-to-r from-orange-900/70 via-black/50 to-pink-900/60"></div>
+        <div className="absolute inset-0 flex flex-col justify-center px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h2 className="text-3xl font-bold text-white">
+              Welcome back, {user?.name?.split(' ')[0] || 'Traveler'} 👋
+            </h2>
+            <p className="text-orange-200 mt-2">
+              Ready to explore your next adventure?
+            </p>
+            <Link
+              href="/plan"
+              className="mt-4 inline-block bg-gradient-to-r from-orange-500 to-pink-500
+              text-white px-6 py-2 rounded-xl text-sm font-semibold shadow-lg hover:scale-105 transition"
+            >
+              + Plan New Trip
+            </Link>
+          </motion.div>
         </div>
       </div>
 
@@ -68,134 +105,107 @@ export default function Dashboard() {
 
           {/* STATS */}
           <div className="grid grid-cols-3 gap-4 mb-8">
-            <div className="p-4 rounded-xl bg-white/80 dark:bg-gray-800 shadow text-center">
-              <p className="text-sm text-gray-500">Trips</p>
-              <h2 className="text-xl font-bold">{trips.length}</h2>
-            </div>
-
-            <div className="p-4 rounded-xl bg-white/80 dark:bg-gray-800 shadow text-center">
-              <p className="text-sm text-gray-500">Total Days</p>
-              <h2 className="text-xl font-bold">
-                {trips.reduce((a, t) => a + t.days, 0)}
-              </h2>
-            </div>
-
-            <div className="p-4 rounded-xl bg-white/80 dark:bg-gray-800 shadow text-center">
-              <p className="text-sm text-gray-500">Budget Trips</p>
-              <h2 className="text-xl font-bold">
-                {trips.filter(t => t.budget === 'low').length}
-              </h2>
-            </div>
+            {[
+              { label: 'Total Trips', value: trips.length, icon: '✈️' },
+              { label: 'Total Days', value: totalDays, icon: '📅' },
+              { label: 'Budget Trips', value: budgetTrips, icon: '💰' },
+            ].map((stat, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                className="p-4 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur shadow text-center border border-gray-100 dark:border-gray-700"
+              >
+                <div className="text-2xl mb-1">{stat.icon}</div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{stat.label}</p>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-pink-500 text-transparent bg-clip-text">
+                  {stat.value}
+                </h2>
+              </motion.div>
+            ))}
           </div>
 
-          {/* HEADER */}
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold 
-            bg-gradient-to-r from-orange-600 to-pink-500 
+          {/* HEADER + SEARCH */}
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-2xl font-bold
+            bg-gradient-to-r from-orange-600 to-pink-500
             text-transparent bg-clip-text">
               My Trips
             </h1>
-
             <Link
               href="/plan"
-              className="bg-gradient-to-r from-orange-500 to-pink-500 
-              text-white px-5 py-2 rounded-xl text-sm font-semibold 
+              className="bg-gradient-to-r from-orange-500 to-pink-500
+              text-white px-5 py-2 rounded-xl text-sm font-semibold
               shadow-lg hover:scale-105 transition"
             >
               + New Trip
             </Link>
           </div>
 
-          {/* SEARCH */}
           <input
             type="text"
-            placeholder="Search destination..."
+            placeholder="🔍 Search destination..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full mb-6 px-4 py-2 rounded-xl border 
-            dark:bg-gray-900 outline-none focus:ring-2 focus:ring-orange-400"
+            className="w-full mb-6 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700
+            bg-white/80 dark:bg-gray-900/80 backdrop-blur outline-none
+            focus:ring-2 focus:ring-orange-400 text-sm text-gray-700 dark:text-gray-300"
           />
 
-          {/* CONTENT */}
+          {/* TRIPS */}
           {loading ? (
-            <div className="text-center text-gray-500 mt-20">
-              Loading...
-            </div>
+            <div className="text-center text-gray-500 mt-20">Loading...</div>
 
           ) : filteredTrips.length === 0 ? (
-
-            <div className="space-y-8 mt-10">
-
-              <div className="text-center">
-                <h2 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-2">
-                  No trips yet ✈️
-                </h2>
-                <p className="text-gray-500 mb-4">
-                  Start planning your first adventure
-                </p>
-
-                <Link
-                  href="/plan"
-                  className="bg-gradient-to-r from-orange-500 to-pink-500 
-                  text-white px-6 py-2 rounded-xl shadow hover:scale-105 transition"
-                >
-                  Plan a Trip
-                </Link>
-              </div>
-
-              {/* EXPLORE */}
-              <div>
-                <h3 className="text-lg font-semibold mb-3">🌍 Explore Ideas</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-orange-100 dark:bg-gray-800 p-3 rounded-xl">Goa 🏖️</div>
-                  <div className="bg-orange-100 dark:bg-gray-800 p-3 rounded-xl">Manali 🏔️</div>
-                  <div className="bg-orange-100 dark:bg-gray-800 p-3 rounded-xl">Jaipur 🏰</div>
-                  <div className="bg-orange-100 dark:bg-gray-800 p-3 rounded-xl">Kerala 🌴</div>
-                </div>
-              </div>
-
-              {/* FAQ */}
-              <div className="bg-white/80 dark:bg-gray-900 p-5 rounded-xl shadow">
-                <h3 className="font-semibold mb-3">❓ FAQs</h3>
-                <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                  <p>👉 Create trip → Click “Plan a Trip”</p>
-                  <p>👉 Edit later → Yes</p>
-                  <p>👉 Auto save → Yes</p>
-                </div>
-              </div>
-
+            <div className="text-center py-16">
+              <div className="text-6xl mb-4">🌍</div>
+              <h2 className="text-xl font-bold text-gray-700 dark:text-gray-300 mb-2">
+                No trips yet!
+              </h2>
+              <p className="text-gray-500 mb-6">Start planning your first adventure</p>
+              <Link
+                href="/plan"
+                className="bg-gradient-to-r from-orange-500 to-pink-500
+                text-white px-6 py-3 rounded-xl shadow hover:scale-105 transition font-semibold"
+              >
+                Plan a Trip ✨
+              </Link>
             </div>
 
           ) : (
-
-            <div className="grid gap-6">
-              {filteredTrips.map((trip: any) => (
+            <div className="grid gap-4">
+              {filteredTrips.map((trip: any, index: number) => (
                 <motion.div
                   key={trip._id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="p-6 rounded-2xl 
-                  bg-orange-100/80 dark:bg-gray-900/80 
-                  shadow-md hover:shadow-xl hover:-translate-y-1 
-                  transition border border-orange-200 dark:border-gray-800 
+                  transition={{ delay: index * 0.05 }}
+                  className="p-5 rounded-2xl
+                  bg-white/80 dark:bg-gray-900/80 backdrop-blur
+                  shadow-md hover:shadow-xl hover:-translate-y-1
+                  transition border border-orange-100 dark:border-gray-800
                   flex justify-between items-center"
                 >
                   <Link href={`/trips/${trip._id}`} className="flex-1">
-                    <h2 className="text-xl font-semibold 
-                    bg-gradient-to-r from-orange-500 to-pink-500 
+                    <h2 className="text-lg font-semibold
+                    bg-gradient-to-r from-orange-500 to-pink-500
                     text-transparent bg-clip-text">
                       ✈️ {trip.destination}
                     </h2>
-
-                    <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
-                      📅 {trip.days} days
+                    <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
+                      📅 {trip.days} days · 💰 {trip.budget} · 🎯 {trip.interests?.slice(0, 2).join(', ')}
+                    </p>
+                    <p className="text-gray-400 text-xs mt-1">
+                      🗓️ {new Date(trip.createdAt).toLocaleDateString('en-IN', {
+                        day: 'numeric', month: 'short', year: 'numeric'
+                      })}
                     </p>
                   </Link>
-
                   <button
                     onClick={() => handleDelete(trip._id)}
-                    className="ml-4 px-3 py-2 rounded-lg 
-                    text-red-500 hover:text-white hover:bg-red-500 transition"
+                    className="ml-4 px-3 py-2 rounded-lg
+                    text-red-400 hover:text-white hover:bg-red-500 transition text-sm"
                   >
                     🗑️
                   </button>
@@ -208,71 +218,67 @@ export default function Dashboard() {
         {/* SIDEBAR */}
         <div className="space-y-6">
 
-  {/* USER CARD */}
-  <div className="p-5 bg-white/80 dark:bg-gray-900 rounded-xl shadow flex items-center gap-4">
-    <div className="w-12 h-12 rounded-full bg-orange-400 flex items-center justify-center text-white font-bold">
-      A
-    </div>
-    <div>
-      <h3 className="font-semibold text-gray-800 dark:text-white">
-        Traveler
-      </h3>
-      <p className="text-xs text-gray-500">Plan your journeys ✈️</p>
-    </div>
-  </div>
+          {/* USER CARD */}
+          <div className="p-5 bg-white/80 dark:bg-gray-900/80 backdrop-blur rounded-2xl shadow border border-gray-100 dark:border-gray-800">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-r from-orange-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg shadow-md">
+                {initials}
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-800 dark:text-white">{user?.name || 'Traveler'}</h3>
+                <p className="text-xs text-gray-500">{user?.email}</p>
+              </div>
+            </div>
+            <Link
+              href="/profile"
+              className="w-full block text-center text-sm border border-orange-200 dark:border-gray-700 text-orange-500 py-2 rounded-xl hover:bg-orange-50 dark:hover:bg-gray-800 transition"
+            >
+              View Profile →
+            </Link>
+          </div>
 
-  {/* RECENT TRIPS */}
-  <div className="p-4 bg-white/80 dark:bg-gray-900 rounded-xl shadow">
-    <h3 className="font-semibold mb-3">📍 Recent Trips</h3>
+          {/* RECENT TRIPS */}
+          <div className="p-5 bg-white/80 dark:bg-gray-900/80 backdrop-blur rounded-2xl shadow border border-gray-100 dark:border-gray-800">
+            <h3 className="font-bold mb-3 text-gray-800 dark:text-white">📍 Recent Trips</h3>
+            {trips.length === 0 ? (
+              <p className="text-sm text-gray-400">No trips yet</p>
+            ) : (
+              trips.slice(0, 4).map(t => (
+                <Link key={t._id} href={`/trips/${t._id}`}>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-2 hover:text-orange-500 transition py-1 border-b border-gray-50 dark:border-gray-800 last:border-0">
+                    ✈️ {t.destination}
+                  </div>
+                </Link>
+              ))
+            )}
+          </div>
 
-    {trips.length === 0 ? (
-      <p className="text-sm text-gray-400">No trips yet</p>
-    ) : (
-      trips.slice(0, 3).map(t => (
-        <div key={t._id} className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-          ✈️ {t.destination}
+          {/* EXPLORE */}
+          <div className="p-5 bg-white/80 dark:bg-gray-900/80 backdrop-blur rounded-2xl shadow border border-gray-100 dark:border-gray-800">
+            <h3 className="font-bold mb-3 text-gray-800 dark:text-white">🌍 Explore Ideas</h3>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              {['Goa 🏖️', 'Manali 🏔️', 'Jaipur 🏰', 'Kerala 🌴', 'Leh 🗻', 'Varanasi 🛕'].map((place, i) => (
+                <Link key={i} href="/plan">
+                  <div className="bg-orange-50 dark:bg-gray-800 hover:bg-orange-100 dark:hover:bg-gray-700 p-2 rounded-xl text-center text-gray-700 dark:text-gray-300 transition cursor-pointer text-xs">
+                    {place}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* ROTATING TRAVEL TIP */}
+          <motion.div
+            key={tipIndex}
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-5 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-2xl shadow"
+          >
+            <h3 className="font-bold mb-2">💡 Travel Tip</h3>
+            <p className="text-sm opacity-90">{TRAVEL_TIPS[tipIndex]}</p>
+          </motion.div>
+
         </div>
-      ))
-    )}
-  </div>
-
-  {/* QUICK STATS */}
-  <div className="p-4 bg-white/80 dark:bg-gray-900 rounded-xl shadow">
-    <h3 className="font-semibold mb-3">📊 Quick Stats</h3>
-
-    <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-      <span>Trips</span>
-      <span>{trips.length}</span>
-    </div>
-
-    <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-2">
-      <span>Total Days</span>
-      <span>{trips.reduce((a,t)=>a+t.days,0)}</span>
-    </div>
-  </div>
-
-  {/* EXPLORE MINI */}
-  <div className="p-4 bg-white/80 dark:bg-gray-900 rounded-xl shadow">
-    <h3 className="font-semibold mb-3">🌍 Explore</h3>
-
-    <div className="grid grid-cols-2 gap-2 text-sm">
-      <div className="bg-orange-100 dark:bg-gray-800 p-2 rounded-lg text-center">Goa</div>
-      <div className="bg-orange-100 dark:bg-gray-800 p-2 rounded-lg text-center">Manali</div>
-      <div className="bg-orange-100 dark:bg-gray-800 p-2 rounded-lg text-center">Jaipur</div>
-      <div className="bg-orange-100 dark:bg-gray-800 p-2 rounded-lg text-center">Kerala</div>
-    </div>
-  </div>
-
-  {/* TIP CARD */}
-  <div className="p-4 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-xl shadow">
-    <h3 className="font-semibold mb-2">💡 Travel Tip</h3>
-    <p className="text-sm opacity-90">
-      Pack light and keep essentials handy 🎒
-    </p>
-  </div>
-
-</div>
-
       </div>
     </div>
   );
