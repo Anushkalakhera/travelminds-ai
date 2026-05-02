@@ -94,7 +94,7 @@ export default function Home() {
       {/* FEATURES */}
       <section className="py-24 px-6 relative z-10">
         <h3 className="text-3xl font-bold text-center mb-16 text-gray-900 dark:text-white">
-          Why TripPlanner AI?
+          Why TravelMinds AI?
         </h3>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -206,7 +206,7 @@ export default function Home() {
             {
               name: 'Priya Sharma',
               location: 'Mumbai, India',
-              review: 'TripPlanner AI saved me hours of research! My Bali trip was perfectly planned in minutes.',
+              review: 'TravelMinds AI saved me hours of research! My Bali trip was perfectly planned in minutes.',
               rating: 5,
               avatar: 'PS',
             },
@@ -268,7 +268,7 @@ export default function Home() {
         <div className="max-w-3xl mx-auto flex flex-col gap-4">
           {[
             {
-              q: 'Is TripPlanner AI free to use?',
+              q: 'Is TravelMinds AI free to use?',
               a: 'Yes! You can create an account and start planning trips completely free.',
             },
             {
@@ -285,7 +285,7 @@ export default function Home() {
             },
             {
               q: 'Which destinations are supported?',
-              a: 'TripPlanner AI supports 150+ destinations worldwide. Simply type your destination and let AI do the rest!',
+              a: 'TravelMinds AI supports 150+ destinations worldwide. Simply type your destination and let AI do the rest!',
             },
           ].map((faq, i) => (
             <FAQItem key={i} q={faq.q} a={faq.a} />
@@ -317,7 +317,7 @@ export default function Home() {
 
       {/* FOOTER */}
       <footer className="text-center py-6 text-gray-500 text-sm border-t border-gray-200 dark:border-gray-800">
-        © 2025 TripPlanner AI ✨
+        © 2026 TravelMinds AI ✨
       </footer>
 
     </main>

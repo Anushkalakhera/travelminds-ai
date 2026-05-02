@@ -24,7 +24,7 @@ export default function Navbar() {
   return (
     <nav className="bg-white dark:bg-gray-900 border-b border-warm-100 dark:border-gray-800 px-6 py-4 flex justify-between items-center sticky top-0 z-50 shadow-sm">
       <Link href="/" className="text-xl font-bold text-warm-400 dark:text-warm-200">
-        ✈️ TripPlanner AI
+        ✈️ TravelMinds AI
       </Link>
 
       <div className="flex gap-4 items-center">

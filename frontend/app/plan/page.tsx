@@ -401,7 +401,7 @@ export default function PlanPage() {
 
       {/* FOOTER */}
       <footer className="text-center py-6 mt-12 text-gray-400 text-sm border-t border-gray-200 dark:border-gray-800">
-        © 2025 TripPlanner AI ✨
+        © 2026 TravelMinds AI ✨
       </footer>
 
     </div>
