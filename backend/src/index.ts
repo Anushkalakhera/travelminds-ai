@@ -14,7 +14,9 @@ const app = express();
 app.use(cors({
   origin: [
     'http://localhost:3000',
-    'https://travelminds-ai.vercel.app'
+    'https://travelminds-ai.vercel.app',
+    'https://travelminds-ai-git-main-anushka-lakheras-projects.vercel.app',
+    /\.vercel\.app$/  // sare vercel subdomains allow karo
   ],
   credentials: true
 }));
