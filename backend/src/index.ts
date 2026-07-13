@@ -27,6 +27,9 @@ app.use('/auth', authRoutes);
 app.use('/trips', tripRoutes); 
 app.use('/weather', weatherRoutes);
 
+app.get("/", (req, res) => {
+  res.send("TravelMinds AI Backend is Running 🚀");
+}); 
 app.get("/check", (req, res) => {
   res.send("OK");
 });
